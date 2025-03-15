@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo "🔍 Running gofumpt for formatting..."
+gofumpt -w .
+
+echo "🚀 Running golangci-lint..."
+golangci-lint run
+if [ $? -ne 0 ]; then
+  echo "❌ Linting failed! Please fix the errors before committing."
+  exit 1
+fi
+
+echo "✅ All checks passed. Proceeding with commit."

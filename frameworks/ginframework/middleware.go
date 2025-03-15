@@ -14,8 +14,6 @@ func LoadMiddlewares(r *gin.Engine, cfg *loader.Config) {
 			corsConfig := cors.DefaultConfig()
 			corsConfig.AllowOrigins = cfg.Server.AllowedOrigins
 			r.Use(cors.New(corsConfig))
-		case "logging":
-			r.Use(gin.Logger())
 		case "recovery":
 			r.Use(gin.Recovery())
 		}
