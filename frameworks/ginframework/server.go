@@ -9,7 +9,7 @@ import (
 )
 
 // StartGinServer initializes the Gin server
-func StartGinServer(cfg *loader.Config, handlerMap map[string]func(map[string]string, map[string]string, map[string]interface{}) (interface{}, int)) {
+func StartGinServer(cfg *loader.Config, handlerMap map[string]func(*Context) (interface{}, int)) {
 	r := gin.Default()
 
 	// Load middleware

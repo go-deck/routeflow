@@ -8,7 +8,7 @@ import (
 )
 
 // StartServer initializes the correct framework
-func StartServer(configPath string, handlerMap map[string]func(map[string]string, map[string]string, map[string]interface{}) (interface{}, int)) {
+func StartServer(configPath string, handlerMap map[string]func(*ginframework.Context) (interface{}, int)) {
 	cfg, err := loader.LoadConfig(configPath)
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
