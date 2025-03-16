@@ -10,7 +10,10 @@ import (
 
 // StartGinServer initializes the Gin server
 func StartGinServer(cfg *loader.Config, handlerMap map[string]func(*Context) (interface{}, int)) {
-	r := gin.Default()
+	r := gin.New()
+
+	// Set Gin to release mode
+	gin.SetMode(gin.ReleaseMode)
 
 	// Load middleware
 	LoadMiddlewares(r, cfg)
