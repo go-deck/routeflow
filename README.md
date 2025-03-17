@@ -33,24 +33,54 @@ framework: gin
 middlewares:
   global: [logging]
 
+database:
+  type: sqlite3            # postgres, mysql, sqlite3
+  host:                    # localhost
+  port:                    # 5432
+  username:                # root
+  password:                # root
+  database: ./userdb       # file path for sqlite3 or database name for postgres and mysql
+  sslmode:                 # disable
+  max_idle_connections: 10 
+  max_open_connections: 100 
+  conn_max_lifetime: 1h    # 1 hour
+  options: {}              # additional options for database connection
+
 routes:
   groups:
     - base: /api/v1
       routes:
         - path: /get-user
-          handler: sample.ListUsers
+          handler: getUserData
           method: GET
         - path: /get-user/:id
-          handler: sample.GetUserDataById
+          handler: getUserDataById
           method: GET
         - path: /userpost
-          handler: sample.CreateUser
+          handler: createUser
           method: POST
           body_params:
             - name: username
               type: string
+              props:
+                min_length: 2
+                max_length: 10
+                required: true
+                format: username
+            - name: email
+              type: string
+              props:
+                min_length: 5
+                max_length: 12
+                required: true
+                format: email
             - name: phonenumber
               type: string
+              props:
+                min_length: 10
+                max_length: 12
+                required: true
+                format: phone
 ```
 
 ### 2️⃣ Create Your Go Application
