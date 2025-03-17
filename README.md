@@ -91,12 +91,10 @@ import (
     "log"
     "github.com/go-deck/routeflow/module/sample"
     routeflow "github.com/go-deck/routeflow/routeflow"
-    ctx "github.com/go-deck/routeflow/routeflow/frameworks/ginframework"
-    _ "github.com/mattn/go-sqlite3"
+    ctx "github.com/go-deck/routeflow/routeflow/frameworks/ginframework/ctx"
 )
 
 func main() {
-    sample.InitDB()
 
     handlerMap := map[string]func(*ctx.Context) (interface{}, int){
         "getUserData":     sample.ListUsers,
