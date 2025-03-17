@@ -1,6 +1,9 @@
-package ginframework
+package ctx
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
 
 // Context wraps request data
 type Context struct {
@@ -8,10 +11,11 @@ type Context struct {
 	PathParams  map[string]string      // Path parameters
 	QueryParams map[string]string      // Query parameters
 	BodyData    map[string]interface{} // JSON body data
+	DB          *gorm.DB               // Database connection
 }
 
 // NewContext creates a new `routeflow.Context` from Gin context
-func NewContext(c *gin.Context) *Context {
+func NewContext(c *gin.Context, db *gorm.DB) *Context {
 	// Extract path parameters
 	pathParams := make(map[string]string)
 	for _, param := range c.Params {
@@ -37,5 +41,6 @@ func NewContext(c *gin.Context) *Context {
 		PathParams:  pathParams,
 		QueryParams: queryParams,
 		BodyData:    bodyData,
+		DB:          db,
 	}
 }

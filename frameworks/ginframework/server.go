@@ -5,11 +5,13 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-deck/routeflow/frameworks/ginframework/ctx"
 	"github.com/go-deck/routeflow/loader"
+	"gorm.io/gorm"
 )
 
 // StartGinServer initializes the Gin server
-func StartGinServer(cfg *loader.Config, handlerMap map[string]func(*Context) (interface{}, int)) {
+func StartGinServer(cfg *loader.Config, handlerMap map[string]func(*ctx.Context) (interface{}, int), db *gorm.DB) {
 	r := gin.New()
 
 	// Set Gin to release mode
@@ -19,7 +21,7 @@ func StartGinServer(cfg *loader.Config, handlerMap map[string]func(*Context) (in
 	LoadMiddlewares(r, cfg)
 
 	// Register routes
-	InitGinRouter(r, cfg, handlerMap)
+	InitGinRouter(r, cfg, handlerMap, db)
 
 	// Start server
 	port := fmt.Sprintf(":%d", cfg.Server.Port)

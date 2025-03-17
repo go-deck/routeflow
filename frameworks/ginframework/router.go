@@ -4,38 +4,35 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-deck/routeflow/frameworks/ginframework/ctx"
+	"github.com/go-deck/routeflow/frameworks/ginframework/handler"
 	"github.com/go-deck/routeflow/loader"
+	"gorm.io/gorm"
 )
 
-// Initialize Gin router with the provided configuration and handler map
-func InitGinRouter(r *gin.Engine, cfg *loader.Config, handlerMap map[string]func(*Context) (interface{}, int)) {
+// InitGinRouter initializes the Gin router
+func InitGinRouter(r *gin.Engine, cfg *loader.Config, handlerMap map[string]func(*ctx.Context) (interface{}, int), db *gorm.DB) {
 	for _, group := range cfg.Routes.Groups {
 		api := r.Group(group.Base)
 		for _, route := range group.Routes {
-			handler, exists := handlerMap[route.Handler]
+			userHandler, exists := handlerMap[route.Handler]
 			if !exists {
 				log.Fatalf("Handler not found for route: %s", route.Handler)
 			}
 
-			// Convert to a Gin-compatible handler
-			wrappedHandler := wrapHandler(handler)
+			// Extract validation properties from YAML
+			props := make(map[string]interface{})
+			if route.BodyParams != nil {
+				for _, param := range route.BodyParams {
+					props[param.Name] = param.Props
+				}
+			}
 
-			// Register routes dynamically
+			// Convert to a Gin-compatible handler
+			wrappedHandler := handler.WrapHandler(userHandler, props, db)
+
+			// Register route dynamically
 			api.Handle(route.Method, route.Path, wrappedHandler)
 		}
-	}
-}
-
-// Convert user-defined handler to a Gin-compatible `gin.HandlerFunc`
-func wrapHandler(userHandler func(*Context) (interface{}, int)) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Convert Gin context to routeflow.Context
-		ctx := NewContext(c)
-
-		// Call the user handler
-		response, statusCode := userHandler(ctx)
-
-		// Send response
-		c.JSON(statusCode, response)
 	}
 }
