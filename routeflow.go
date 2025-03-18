@@ -39,7 +39,6 @@ func (app *App) InitDB() error {
 
 // Serve starts the API server with the given handler mappings
 func (app *App) Serve(handlerMap map[string]func(*ctx.Context) (interface{}, int)) {
-
 	var server base.Server
 	switch app.Config.Framework {
 	case "gin":
@@ -49,5 +48,4 @@ func (app *App) Serve(handlerMap map[string]func(*ctx.Context) (interface{}, int
 	}
 
 	server.Start(app.Config, handlerMap, app.DB)
-
 }

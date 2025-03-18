@@ -41,10 +41,9 @@ type Config struct {
 				Handler    string `yaml:"handler"`
 				Method     string `yaml:"method"`
 				BodyParams []struct {
-					Name       string `yaml:"name"`
-					Type       string `yaml:"type"`
-					Validation map[string]interface {
-					} `yaml:"validation"`
+					Name       string                 `yaml:"name"`
+					Type       string                 `yaml:"type"`
+					Validation map[string]interface{} `yaml:"validation"`
 				} `yaml:"body_params"`
 			} `yaml:"routes"`
 		} `yaml:"groups"`

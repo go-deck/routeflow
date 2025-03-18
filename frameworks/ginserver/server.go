@@ -13,7 +13,6 @@ import (
 type GinServer struct{}
 
 func (g *GinServer) Start(cfg *loader.Config, handlerMap map[string]func(*ctx.Context) (interface{}, int), db *gorm.DB) {
-
 	r := gin.New()
 
 	gin.SetMode(gin.ReleaseMode)
