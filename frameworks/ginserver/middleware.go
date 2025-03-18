@@ -1,4 +1,4 @@
-package ginframework
+package ginserver
 
 import (
 	"github.com/gin-contrib/cors"

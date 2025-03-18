@@ -1,20 +1,21 @@
-package ginframework
+package ginserver
 
 import (
 	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-deck/routeflow/frameworks/ginframework/ctx"
+	"github.com/go-deck/routeflow/ctx"
 	"github.com/go-deck/routeflow/loader"
 	"gorm.io/gorm"
 )
 
-// StartGinServer initializes the Gin server
-func StartGinServer(cfg *loader.Config, handlerMap map[string]func(*ctx.Context) (interface{}, int), db *gorm.DB) {
+type GinServer struct{}
+
+func (g *GinServer) Start(cfg *loader.Config, handlerMap map[string]func(*ctx.Context) (interface{}, int), db *gorm.DB) {
+
 	r := gin.New()
 
-	// Set Gin to release mode
 	gin.SetMode(gin.ReleaseMode)
 
 	// Load middleware

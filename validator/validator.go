@@ -7,8 +7,8 @@ import (
 )
 
 // ValidateBody checks request data against validation rules
-func ValidateBody(bodyData map[string]interface{}, props map[string]interface{}) error {
-	for field, rules := range props {
+func ValidateBody(bodyData map[string]interface{}, validation map[string]interface{}) error {
+	for field, rules := range validation {
 		ruleMap, ok := rules.(map[string]interface{})
 		if !ok {
 			continue
@@ -39,7 +39,7 @@ func ValidateBody(bodyData map[string]interface{}, props map[string]interface{})
 						return errors.New(field + " must be at most " + strconv.Itoa(max) + " characters long")
 					}
 				}
-			case "format":
+			case "pattern":
 				if isString {
 					switch param.(string) {
 					case "email":
@@ -49,6 +49,10 @@ func ValidateBody(bodyData map[string]interface{}, props map[string]interface{})
 					case "phone":
 						if !isValidPhone(strVal) {
 							return errors.New(field + " must be a valid phone number")
+						}
+					case "username":
+						if containsSpace(strVal) {
+							return errors.New(field + " cannot contain spaces")
 						}
 					}
 				}
@@ -68,4 +72,9 @@ func isValidEmail(email string) bool {
 func isValidPhone(phone string) bool {
 	re := regexp.MustCompile(`^\+?[0-9]{10,15}$`)
 	return re.MatchString(phone)
+}
+
+// containsSpace checks if the string contains any spaces
+func containsSpace(value string) bool {
+	return regexp.MustCompile(`\s`).MatchString(value)
 }

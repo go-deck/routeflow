@@ -1,11 +1,11 @@
-package ginframework
+package ginserver
 
 import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-deck/routeflow/frameworks/ginframework/ctx"
-	"github.com/go-deck/routeflow/frameworks/ginframework/handler"
+	"github.com/go-deck/routeflow/ctx"
+	"github.com/go-deck/routeflow/handler"
 	"github.com/go-deck/routeflow/loader"
 	"gorm.io/gorm"
 )
@@ -21,15 +21,15 @@ func InitGinRouter(r *gin.Engine, cfg *loader.Config, handlerMap map[string]func
 			}
 
 			// Extract validation properties from YAML
-			props := make(map[string]interface{})
+			validation := make(map[string]interface{})
 			if route.BodyParams != nil {
 				for _, param := range route.BodyParams {
-					props[param.Name] = param.Props
+					validation[param.Name] = param.Validation
 				}
 			}
 
 			// Convert to a Gin-compatible handler
-			wrappedHandler := handler.WrapHandler(userHandler, props, db)
+			wrappedHandler := handler.WrapHandler(userHandler, validation, db)
 
 			// Register route dynamically
 			api.Handle(route.Method, route.Path, wrappedHandler)
