@@ -13,3 +13,6 @@ type Context struct {
 	BodyData    map[string]interface{} // JSON body data
 	DB          *gorm.DB               // Database connection
 }
+
+// HandlerFunc defines the function signature for handlers
+type HandlerFunc func(*Context) (interface{}, int)

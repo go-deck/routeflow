@@ -8,25 +8,31 @@ import (
 	base "github.com/go-deck/routeflow/frameworks"
 	ginserver "github.com/go-deck/routeflow/frameworks/ginserver"
 	"github.com/go-deck/routeflow/loader"
+	"github.com/go-deck/routeflow/utils"
 	"gorm.io/gorm"
 )
 
 // App represents the main application structure
 type App struct {
-	Config *loader.Config
-	DB     *gorm.DB
+	Config     *loader.Config
+	DB         *gorm.DB
+	HandlerMap map[string]func(*ctx.Context) (interface{}, int)
 }
 
 type Context = ctx.Context
 
-// New creates a new instance of App
-func New(configPath string) (*App, error) {
+func New(configPath string, handlerStructs ...interface{}) (*App, error) {
 	cfg, err := loader.LoadConfig(configPath)
 	if err != nil {
 		return nil, err
 	}
 
-	return &App{Config: cfg}, nil
+	app := &App{Config: cfg}
+
+	discoveredHandlers := utils.DiscoverHandlers(handlerStructs...)
+	app.HandlerMap = utils.MapHandlersFromYAML(cfg, discoveredHandlers)
+
+	return app, nil
 }
 
 // InitDB initializes the database connection
