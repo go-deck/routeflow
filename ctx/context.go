@@ -1,21 +1,12 @@
 package ctx
 
 import (
-	"github.com/gin-gonic/gin"
+	framework "github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-// Context wraps request data
-type Context struct {
-	GinContext  *gin.Context           // Raw Gin context (if needed)
-	PathParams  map[string]string      // Path parameters
-	QueryParams map[string]string      // Query parameters
-	BodyData    map[string]interface{} // JSON body data
-	DB          *gorm.DB               // Database connection
-}
-
 // NewContext creates a new `routeflow.Context` from Gin context
-func NewContext(c *gin.Context, db *gorm.DB) *Context {
+func NewContext(c *framework.Context, db *gorm.DB) *Context {
 	// Extract path parameters
 	pathParams := make(map[string]string)
 	for _, param := range c.Params {

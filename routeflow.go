@@ -17,6 +17,8 @@ type App struct {
 	DB     *gorm.DB
 }
 
+type Context = ctx.Context
+
 // New creates a new instance of App
 func New(configPath string) (*App, error) {
 	cfg, err := loader.LoadConfig(configPath)
