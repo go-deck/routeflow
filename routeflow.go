@@ -46,7 +46,7 @@ func (app *App) InitDB() error {
 }
 
 // Serve starts the API server with the given handler mappings
-func (app *App) Serve(handlerMap map[string]func(*ctx.Context) (interface{}, int)) {
+func (app *App) Serve() {
 	var server base.Server
 	switch app.Config.Framework {
 	case "gin":
@@ -55,5 +55,5 @@ func (app *App) Serve(handlerMap map[string]func(*ctx.Context) (interface{}, int
 		log.Fatalf("Unsupported framework: %s", app.Config.Framework)
 	}
 
-	server.Start(app.Config, handlerMap, app.DB)
+	server.Start(app.Config, app.HandlerMap, app.DB)
 }
