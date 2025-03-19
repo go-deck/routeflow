@@ -16,7 +16,7 @@ RouteFlow is a **declarative API routing library** for Go that simplifies API de
 ## 🛠 Installation
 Install RouteFlow using:
 ```sh
- go get github.com/go-deck/routeflow
+go get github.com/go-deck/routeflow
 ```
 
 ---
@@ -99,28 +99,34 @@ routes:
 package main
 
 import (
-    "log"
-
-    "github.com/go-deck/routeflow/module/sample"
-    routeflow "github.com/go-deck/routeflow/routeflow"
-    "github.com/go-deck/routeflow/routeflow/ctx"
+    "github.com/apps/sample"
+    ctx "github.com/go-deck/routeflow"
+    log "github.com/sirupsen/logrus"
     _ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
-    handlerMap := map[string]func(*ctx.Context) (interface{}, int){
-        "getUserData":     sample.ListUsers,
-        "getUserDataById": sample.GetUserDataById,
-        "createUser":      sample.CreateUser,
+    app, err := ctx.New("lib.yaml", &sample.SampleHandler{})
+
+    if err != nil {
+        log.Error(err)
     }
 
-    app, _ := routeflow.New("lib.yaml")
+    err = app.InitDB()
+
+    if err != nil {
+        log.Error(err)
+    }
+
+    err = app.DB.AutoMigrate(&sample.User{})
+
+    if err != nil {
+        log.Error(err)
+    }
 
     log.Println("Starting API Server with declarative routing...")
-    
-    app.InitDB()
-    app.DB.AutoMigrate(&sample.User{})  // Auto-migrate if enabled
-    app.Serve(handlerMap)
+
+    app.Serve()
 }
 ```
 
@@ -133,50 +139,77 @@ package sample
 
 import (
     "net/http"
-    "github.com/go-deck/routeflow/routeflow/ctx"
+    ctx "github.com/go-deck/routeflow"
+    "gorm.io/gorm"
 )
 
+// User represents a user model
 type User struct {
     ID          int    `json:"id"`
     Username    string `json:"username"`
-    PhoneNumber string `json:"phone_number"`
+    PhoneNumber string `json:"phonenumber"`
     Email       string `json:"email"`
 }
 
+type SampleHandler struct{}
+
 // Get all users
-func ListUsers(c *ctx.Context) (interface{}, int) {
+func (b *SampleHandler) ListUsers(c *ctx.Context) (interface{}, int) {
     var users []User
+
+    c.DB.AutoMigrate(&User{})
+
+    // Use GORM to fetch all users
     if err := c.DB.Find(&users).Error; err != nil {
         return map[string]string{"error": "Database error"}, http.StatusInternalServerError
     }
+
     return users, http.StatusOK
 }
 
-// Get user by ID
-func GetUserDataById(c *ctx.Context) (interface{}, int) {
+// Get user data by ID
+func (b *SampleHandler) GetUserDataById(c *ctx.Context) (interface{}, int) {
+    c.DB.AutoMigrate(&User{})
     id, exists := c.PathParams["id"]
     if !exists {
         return map[string]string{"error": "Invalid user ID"}, http.StatusBadRequest
     }
 
     var user User
-    if err := c.DB.First(&user, id).Error; err != nil {
-        return map[string]string{"error": "User not found"}, http.StatusNotFound
+    // Use GORM to fetch user by ID
+    if err := c.DB.Where("id = ?", id).First(&user).Error; err != nil {
+        if err == gorm.ErrRecordNotFound {
+            return map[string]string{"error": "User not found"}, http.StatusNotFound
+        }
+        return map[string]string{"error": "Database error"}, http.StatusInternalServerError
     }
+
     return user, http.StatusOK
 }
 
 // Create a new user
-func CreateUser(c *ctx.Context) (interface{}, int) {
+func (b *SampleHandler) CreateUser(c *ctx.Context) (interface{}, int) {
+    c.DB.AutoMigrate(&User{})
+    // Extract parameters from bodyData
+    username, ok1 := c.BodyData["username"].(string)
+    phonenumber, ok2 := c.BodyData["phonenumber"].(string)
+    email, ok3 := c.BodyData["email"].(string)
+
+    if !ok1 || !ok2 || !ok3 {
+        return map[string]string{"error": "Invalid input"}, http.StatusBadRequest
+    }
+
+    // Insert into database using GORM
     user := User{
-        Username:    c.BodyData["username"].(string),
-        PhoneNumber: c.BodyData["phonenumber"].(string),
-        Email:       c.BodyData["email"].(string),
+        Username:    username,
+        PhoneNumber: phonenumber,
+        Email:       email,
     }
-    
+
     if err := c.DB.Create(&user).Error; err != nil {
-        return map[string]string{"error": "Failed to create user"}, http.StatusInternalServerError
+        return map[string]string{"error": err.Error()}, http.StatusInternalServerError
     }
+
     return map[string]string{"message": "User created successfully"}, http.StatusCreated
 }
 ```
@@ -206,4 +239,3 @@ Contributions are welcome! Feel free to open an issue or PR on [GitHub](https://
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 🚀 **Happy coding!** 🎯
-
