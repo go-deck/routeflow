@@ -11,7 +11,6 @@ import (
 // LoadConfig loads the YAML file into a Config struct
 func LoadConfig(configPath string) (*Config, error) {
 	data, err := os.ReadFile(configPath)
-
 	if err != nil {
 		log.WithFields(log.Fields{
 			"error": err,
@@ -21,7 +20,6 @@ func LoadConfig(configPath string) (*Config, error) {
 
 	var config Config
 	err = yaml.Unmarshal(data, &config)
-
 	if err != nil {
 		log.WithFields(log.Fields{
 			"error": err,
