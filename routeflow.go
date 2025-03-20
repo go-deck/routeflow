@@ -1,7 +1,7 @@
 package routeflow
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/go-deck/routeflow/ctx"
 	"github.com/go-deck/routeflow/db"
@@ -23,7 +23,11 @@ type Context = ctx.Context
 
 func New(configPath string, handlerStructs ...interface{}) (*App, error) {
 	cfg, err := loader.LoadConfig(configPath)
+
 	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Error("Failed to load config")
 		return nil, err
 	}
 
@@ -38,9 +42,14 @@ func New(configPath string, handlerStructs ...interface{}) (*App, error) {
 // InitDB initializes the database connection
 func (app *App) InitDB() error {
 	dbConn, err := db.ConnectDB(app.Config)
+
 	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Error("Failed to connect to database")
 		return err
 	}
+
 	app.DB = dbConn
 	return nil
 }
