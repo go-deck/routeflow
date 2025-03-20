@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-deck/routeflow/ctx"
-	"github.com/go-deck/routeflow/validator"
+	"github.com/go-deck/routeflow/internal/ctx"
+	"github.com/go-deck/routeflow/internal/validator"
 	"gorm.io/gorm"
 )
 

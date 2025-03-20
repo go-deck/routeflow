@@ -4,9 +4,9 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-deck/routeflow/ctx"
-	"github.com/go-deck/routeflow/handler"
-	"github.com/go-deck/routeflow/loader"
+	"github.com/go-deck/routeflow/internal/ctx"
+	"github.com/go-deck/routeflow/internal/handler"
+	"github.com/go-deck/routeflow/internal/loader"
 	"gorm.io/gorm"
 )
 

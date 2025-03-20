@@ -4,8 +4,8 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/go-deck/routeflow/ctx"
-	"github.com/go-deck/routeflow/loader"
+	"github.com/go-deck/routeflow/internal/ctx"
+	"github.com/go-deck/routeflow/internal/loader"
 )
 
 // DiscoverHandlers extracts handler functions dynamically

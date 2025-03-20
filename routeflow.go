@@ -3,12 +3,12 @@ package routeflow
 import (
 	log "github.com/sirupsen/logrus"
 
-	"github.com/go-deck/routeflow/ctx"
-	"github.com/go-deck/routeflow/db"
 	base "github.com/go-deck/routeflow/frameworks"
 	ginserver "github.com/go-deck/routeflow/frameworks/ginserver"
-	"github.com/go-deck/routeflow/loader"
-	"github.com/go-deck/routeflow/utils"
+	"github.com/go-deck/routeflow/internal/ctx"
+	"github.com/go-deck/routeflow/internal/db"
+	"github.com/go-deck/routeflow/internal/loader"
+	"github.com/go-deck/routeflow/internal/utils"
 	"gorm.io/gorm"
 )
 

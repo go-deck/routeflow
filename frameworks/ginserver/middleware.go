@@ -3,7 +3,7 @@ package ginserver
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/go-deck/routeflow/loader"
+	"github.com/go-deck/routeflow/internal/loader"
 )
 
 // LoadMiddlewares applies middlewares dynamically
