@@ -17,7 +17,8 @@ type Config struct {
 	Framework string `yaml:"framework"`
 
 	Middlewares struct {
-		Global []string `yaml:"global"`
+		BuiltIn []string `yaml:"built_in"`
+		Custom  []string `yaml:"custom"`
 	} `yaml:"middlewares"`
 
 	Database struct {
@@ -35,15 +36,24 @@ type Config struct {
 
 	Routes struct {
 		Groups []struct {
-			Base   string `yaml:"base"`
+			Base        string `yaml:"base"`
+			Middlewares struct {
+				BuiltIn []string `yaml:"built_in"`
+				Custom  []string `yaml:"custom"`
+			} `yaml:"middlewares"`
 			Routes []struct {
-				Path       string `yaml:"path"`
-				Handler    string `yaml:"handler"`
-				Method     string `yaml:"method"`
+				Path        string `yaml:"path"`
+				Handler     string `yaml:"handler"`
+				Method      string `yaml:"method"`
+				Middlewares struct {
+					BuiltIn []string `yaml:"built_in"`
+					Custom  []string `yaml:"custom"`
+				} `yaml:"middlewares"`
 				BodyParams []struct {
-					Name       string                 `yaml:"name"`
-					Type       string                 `yaml:"type"`
-					Validation map[string]interface{} `yaml:"validation"`
+					Name       string `yaml:"name"`
+					Type       string `yaml:"type"`
+					Validation map[string]interface {
+					} `yaml:"validation"`
 				} `yaml:"body_params"`
 			} `yaml:"routes"`
 		} `yaml:"groups"`

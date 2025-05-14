@@ -14,12 +14,19 @@ import (
 
 // App represents the main application structure
 type App struct {
-	Config     *loader.Config
-	DB         *gorm.DB
-	HandlerMap map[string]func(*ctx.Context) (interface{}, int)
+	Config        *loader.Config
+	DB            *gorm.DB
+	HandlerMap    map[string]func(*ctx.Context) (interface{}, int)
+	MiddlewareMap map[string]func(*ctx.Context) (interface{}, int)
 }
 
 type Context = ctx.Context
+
+// Register middleware struct instances
+func (app *App) RegisterMiddlewareStructs(middlewares ...interface{}) {
+	discoverMiddleware := utils.DiscoverHandlers(middlewares...)
+	app.MiddlewareMap = utils.MapMiddlewareHandlersFromYAML(app.Config, discoverMiddleware)
+}
 
 func New(configPath string, handlerStructs ...interface{}) (*App, error) {
 	cfg, err := loader.LoadConfig(configPath)
@@ -62,5 +69,5 @@ func (app *App) Serve() {
 		log.Fatalf("Unsupported framework: %s", app.Config.Framework)
 	}
 
-	server.Start(app.Config, app.HandlerMap, app.DB)
+	server.Start(app.Config, app.HandlerMap, app.DB, app.MiddlewareMap)
 }

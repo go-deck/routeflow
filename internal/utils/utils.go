@@ -8,37 +8,29 @@ import (
 	"github.com/go-deck/routeflow/internal/loader"
 )
 
-// DiscoverHandlers extracts handler functions dynamically
+// Enhanced discovery with clear logging
 func DiscoverHandlers(handlerStructs ...interface{}) map[string]ctx.HandlerFunc {
-	handlerMap := make(map[string]ctx.HandlerFunc)
+	handlers := make(map[string]ctx.HandlerFunc)
 
 	for _, structInstance := range handlerStructs {
 		v := reflect.ValueOf(structInstance)
+		if v.Kind() != reflect.Ptr || v.Elem().Kind() != reflect.Struct {
+			log.Printf("⚠️ Invalid handler type: %T", structInstance)
+			continue
+		}
 
-		// Check if we have a pointer to struct
-		if v.Kind() == reflect.Ptr && v.Elem().Kind() == reflect.Struct {
-			t := v.Type()
-			log.Printf("🔍 Inspecting handler: %s", t.String())
+		t := v.Type()
+		for i := 0; i < v.NumMethod(); i++ {
+			method := v.Method(i)
+			name := t.Method(i).Name
 
-			for i := 0; i < v.NumMethod(); i++ {
-				method := v.Method(i)
-				methodName := t.Method(i).Name
-
-				handlerFunc, ok := method.Interface().(func(*ctx.Context) (interface{}, int))
-				if !ok {
-					log.Printf("❌ Skipping method %s: Invalid signature", methodName)
-					continue
-				}
-
-				handlerMap[methodName] = handlerFunc
-				log.Printf("✅ Registered handler: %s", methodName)
+			if fn, ok := method.Interface().(func(*ctx.Context) (interface{}, int)); ok {
+				handlers[name] = fn
+				log.Printf("✅ Registered handler: %s", name)
 			}
-		} else {
-			log.Printf("⚠️ Invalid handler type: %T (expected pointer to struct)", structInstance)
 		}
 	}
-
-	return handlerMap
+	return handlers
 }
 
 // Map YAML handlers to discovered handlers
@@ -47,13 +39,11 @@ func MapHandlersFromYAML(cfg *loader.Config, discovered map[string]ctx.HandlerFu
 
 	for _, group := range cfg.Routes.Groups {
 		for _, route := range group.Routes {
-			handlerName := route.Handler // Handler name from YAML
+			handlerName := route.Handler
 
 			if fn, exists := discovered[handlerName]; exists {
-				// Explicit type conversion
-				mappedHandlers[handlerName] = func(c *ctx.Context) (interface{}, int) {
-					return fn(c) // Invoke the discovered function
-				}
+				// Direct assignment avoids closure issues
+				mappedHandlers[handlerName] = fn
 				log.Printf("✔ Mapped handler: %s", handlerName)
 			} else {
 				log.Fatalf("❌ Handler not found: %s", handlerName)
@@ -62,4 +52,53 @@ func MapHandlersFromYAML(cfg *loader.Config, discovered map[string]ctx.HandlerFu
 	}
 
 	return mappedHandlers
+}
+
+func MapMiddlewareHandlersFromYAML(cfg *loader.Config, discovered map[string]ctx.HandlerFunc) map[string]func(*ctx.Context) (interface{}, int) {
+	mappedHandlers := make(map[string]func(*ctx.Context) (interface{}, int))
+
+	// Collect all middleware references from all levels
+	var allMiddlewareNames []string
+
+	// Global middlewares
+	allMiddlewareNames = append(allMiddlewareNames, cfg.Middlewares.BuiltIn...)
+	allMiddlewareNames = append(allMiddlewareNames, cfg.Middlewares.Custom...)
+
+	// Traverse route groups and routes
+	for _, group := range cfg.Routes.Groups {
+		// Group-level middlewares
+		allMiddlewareNames = append(allMiddlewareNames, group.Middlewares.BuiltIn...)
+		allMiddlewareNames = append(allMiddlewareNames, group.Middlewares.Custom...)
+
+		// Route-level middlewares
+		for _, route := range group.Routes {
+			allMiddlewareNames = append(allMiddlewareNames, route.Middlewares.BuiltIn...)
+			allMiddlewareNames = append(allMiddlewareNames, route.Middlewares.Custom...)
+		}
+	}
+
+	// Process all collected middleware names
+	for _, name := range unique(allMiddlewareNames) {
+		if fn, exists := discovered[name]; exists {
+			mappedHandlers[name] = fn
+			log.Printf("✔ Mapped middleware: %s", name)
+		} else {
+			log.Printf("⚠️ Middleware not found: %s", name)
+		}
+	}
+
+	return mappedHandlers
+}
+
+// Helper function to get unique values
+func unique(input []string) []string {
+	seen := make(map[string]bool)
+	result := make([]string, 0, len(input))
+	for _, val := range input {
+		if !seen[val] {
+			seen[val] = true
+			result = append(result, val)
+		}
+	}
+	return result
 }

@@ -2,7 +2,6 @@ package validator
 
 import (
 	"errors"
-	"regexp"
 	"strconv"
 )
 
@@ -39,42 +38,8 @@ func ValidateBody(bodyData map[string]interface{}, validation map[string]interfa
 						return errors.New(field + " must be at most " + strconv.Itoa(max) + " characters long")
 					}
 				}
-			case "pattern":
-				if isString {
-					switch param.(string) {
-					case "email":
-						if !isValidEmail(strVal) {
-							return errors.New(field + " must be a valid email")
-						}
-					case "phone":
-						if !isValidPhone(strVal) {
-							return errors.New(field + " must be a valid phone number")
-						}
-					case "username":
-						if containsSpace(strVal) {
-							return errors.New(field + " cannot contain spaces")
-						}
-					}
-				}
 			}
 		}
 	}
 	return nil
-}
-
-// isValidEmail checks if the given string is a valid email
-func isValidEmail(email string) bool {
-	re := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
-	return re.MatchString(email)
-}
-
-// isValidPhone checks if the given string is a valid phone number
-func isValidPhone(phone string) bool {
-	re := regexp.MustCompile(`^\+?[0-9]{10,15}$`)
-	return re.MatchString(phone)
-}
-
-// containsSpace checks if the string contains any spaces
-func containsSpace(value string) bool {
-	return regexp.MustCompile(`\s`).MatchString(value)
 }

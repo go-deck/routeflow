@@ -5,6 +5,45 @@ import (
 	"gorm.io/gorm"
 )
 
+const ContextKey = "RF_CONTEXT"
+
+// Get (update existing NewContext to this)
+func Get(c *framework.Context) *Context {
+	return c.MustGet(ContextKey).(*Context)
+}
+
+// Initialize middleware (add this new function)
+func Middleware(db *gorm.DB) framework.HandlerFunc {
+	return func(c *framework.Context) {
+		// Create context once per request
+		cc := &Context{
+			GinContext:  c,
+			PathParams:  make(map[string]string),
+			QueryParams: make(map[string]string),
+			BodyData:    make(map[string]interface{}),
+			DB:          db,
+		}
+
+		// Parse data once
+		for _, param := range c.Params {
+			cc.PathParams[param.Key] = param.Value
+		}
+
+		for key, values := range c.Request.URL.Query() {
+			cc.QueryParams[key] = values[0]
+		}
+
+		if c.Request.Method == "POST" || c.Request.Method == "PUT" {
+			if err := c.ShouldBindJSON(&cc.BodyData); err != nil {
+				cc.BodyData = map[string]interface{}{"error": "Invalid JSON"}
+			}
+		}
+
+		c.Set(ContextKey, cc)
+		c.Next()
+	}
+}
+
 // NewContext creates a new `routeflow.Context` from Gin context
 func NewContext(c *framework.Context, db *gorm.DB) *Context {
 	// Extract path parameters
