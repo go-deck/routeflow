@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/go-deck/routeflow/loader"
+	"github.com/go-deck/routeflow/internal/loader"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"

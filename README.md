@@ -1,209 +1,248 @@
 # 🚀 RouteFlow: Declarative API Routing for Go
 
-## Overview
-RouteFlow is a **declarative API routing library** for Go that simplifies API development by allowing users to define routes, middleware, and database configurations using a **YAML file**. It supports multiple frameworks, starting with **Gin**, and provides built-in database handling with **PostgreSQL, MySQL, and SQLite3**.
+[![Go Reference](https://pkg.go.dev/badge/github.com/go-deck/routeflow.svg)](https://pkg.go.dev/github.com/go-deck/routeflow)
+[![Go Report Card](https://goreportcard.com/badge/github.com/go-deck/routeflow)](https://goreportcard.com/report/github.com/go-deck/routeflow)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 🌟 Features
-- **Declarative Routing**: Define routes in YAML, eliminating manual route handling.
-- **Multi-Framework Support**: Currently supports **Gin**, with plans for Fiber, Echo, and Chi.
-- **Middleware Configuration**: Easily enable logging, CORS, security, and more via YAML.
-- **Automatic Validation**: Supports field validation, including **required fields, email, phone number, min/max length**, etc.
-- **Database Integration**: Built-in support for PostgreSQL, MySQL, and SQLite3.
-- **Dynamic Context**: Auto-injects request parameters and database connection into handlers.
+[![View Documentation](https://img.shields.io/badge/View-Documentation-2ea44f?style=for-the-badge&logo=go&logoColor=white)](https://pkg.go.dev/github.com/go-deck/routeflow)
 
----
-
-## 🛠 Installation
-Install RouteFlow using:
-```sh
- go get github.com/go-deck/routeflow
+```go
+import "github.com/go-deck/routeflow"  // [Documentation](https://pkg.go.dev/github.com/go-deck/routeflow)
 ```
 
----
+## 🔍 Overview
+RouteFlow is a high-performance, declarative API routing library for Go that simplifies RESTful API development. Define your entire API structure, including routes, middlewares, and database configurations, in a clean YAML file for better maintainability and scalability.
 
-## 🚀 Usage
+## 🌟 Key Features
+- **Declarative Configuration** - Define your entire API in YAML
+- **Middleware Support** - Built-in and custom middleware chaining
+- **Request Validation** - Schema-based request validation
+- **Database Integration** - Seamless ORM support with GORM
+- **RESTful Routes** - Intuitive route definitions
+- **High Performance** - Optimized for speed and low latency
+- **Extensible** - Easy to extend with custom functionality
 
-### 1️⃣ Define Your `lib.yaml`
-Create a YAML file to configure the server, middleware, routes, and database settings.
+## 🚀 Quick Start
+
+### Prerequisites
+- Go 1.16+
+- Database (PostgreSQL/MySQL/SQLite3)
+
+### Installation
+
+```bash
+go get -u github.com/go-deck/routeflow
+```
+
+### Basic Project Structure
+
+```
+myapp/
+├── main.go
+├── go.mod
+├── go.sum
+├── lib.yaml
+└── handlers/
+    └── user_handler.go
+```
+
+
+## 🛠 Middleware System
+
+### Built-in Middlewares
+
+| Middleware | Description |
+|------------|-------------|
+| `logging`  | Request/response logging |
+| `cors`     | CORS headers management |
+| `auth`     | Basic authentication |
+| `recovery` | Panic recovery |
+
+### Custom Middleware Example
+
+```go
+// Define your middleware methods
+type AuthMiddleware struct{}
+
+
+// JWT Authentication Middleware
+func (m *AuthMiddleware) JWTValidation(c *ctx.Context) (interface{}, int) {
+    token := c.GetHeader("Authorization")
+    if token == "" {
+        return map[string]string{"error": "Authorization header required"}, 401
+    }
+    
+    // Add your JWT validation logic here
+    if !isValidToken(token) {
+        return map[string]string{"error": "Invalid or expired token"}, 401
+    }
+    
+    return nil, 0 // Continue to next middleware/handler
+}
+
+// Rate Limiting Middleware
+func (m *AuthMiddleware) RateLimit(c *ctx.Context) (interface{}, int) {
+    ip := c.ClientIP()
+    if isRateLimited(ip) {
+        return map[string]string{"error": "Too many requests"}, 429
+    }
+    return nil, 0
+}
+```
+
+### Registering Middleware
+
 ```yaml
-server:
-  port: 8080
-  timeout: 30s
-  allow_cors: true
-  allowed_origins: ["*"]
-  cookie:
-    secure: true
-    http_only: true
-    same_site: Strict
+middlewares:
+  built_in: [logging, recovery]
+  custom: [JWTValidation, RateLimit]
 
-framework: gin
+## 💾 Database Integration
 
+RouteFlow provides seamless integration with multiple databases through GORM:
+
+### Supported Databases
+
+| Database | Connection String Example |
+|----------|--------------------------|
+| PostgreSQL | `postgres://user:pass@localhost:5432/dbname` |
+| MySQL      | `user:pass@tcp(127.0.0.1:3306)/dbname` |
+| SQLite3    | `file:test.db` |
+
+### `lib.yaml` Example:
+
+```yaml
 database:
-  type: sqlite3            # postgres, mysql, sqlite3
-  host:                    # localhost
-  port:                    # 5432
-  username:                # root
-  password:                # root
-  database: ./userdb       # File path for SQLite3 or DB name for Postgres/MySQL
-  sslmode:                 # disable
+  type: postgres  # postgres, mysql, sqlite3
+  host: localhost
+  port: 5432
+  username: dbuser
+  password: dbpass
+  database: myapp_db
+  sslmode: disable
   max_idle_connections: 10
   max_open_connections: 100
-  conn_max_lifetime: 1h    # 1 hour
-  migrate: true            # Auto-migrate database
-
-middlewares:
-  global: [logging]
-
-routes:
-  groups:
-    - base: /api/v1
-      routes:
-        - path: /get-user
-          handler: getUserData
-          method: GET
-        - path: /get-user/:id
-          handler: getUserDataById
-          method: GET
-        - path: /userpost
-          handler: createUser
-          method: POST
-          body_params:
-            - name: username
-              type: string
-              validation:
-                min_length: 2
-                max_length: 10
-                required: true
-                pattern: username
-            - name: email
-              type: string
-              validation:
-                min_length: 5
-                max_length: 12
-                required: true
-                pattern: email
-            - name: phonenumber
-              type: string
-              validation:
-                min_length: 10
-                max_length: 12
-                required: true
-                pattern: phone
+  conn_max_lifetime: 1h
+  migrate: true  # Auto-migrate models
 ```
 
----
+## 🚀 Getting Started
 
-### 2️⃣ Create Your Go Application
+### Example Project Structure
+
+```
+myapp/
+├── cmd/
+│   └── server/
+│       └── main.go
+├── internal/
+│   ├── config/
+│   │   └── config.go
+│   ├── handler/
+│   │   └── user_handler.go
+│   ├── middleware/
+│   │   └── auth.go
+│   └── model/
+│       └── user.go
+├── migrations/
+│   └── 001_initial_schema.sql
+├── pkg/
+│   └── utils/
+├── .env
+├── .gitignore
+├── go.mod
+├── go.sum
+└── lib.yaml
+```
+
+### Example Handler
 
 ```go
-package main
+// handlers/user_handler.go
+package handlers
 
 import (
-    "log"
-
-    "github.com/go-deck/routeflow/module/sample"
-    routeflow "github.com/go-deck/routeflow/routeflow"
-    "github.com/go-deck/routeflow/routeflow/ctx"
-    _ "github.com/mattn/go-sqlite3"
+	"net/http"
+	"github.com/go-deck/routeflow/context"
 )
 
-func main() {
-    handlerMap := map[string]func(*ctx.Context) (interface{}, int){
-        "getUserData":     sample.ListUsers,
-        "getUserDataById": sample.GetUserDataById,
-        "createUser":      sample.CreateUser,
-    }
+type UserHandler struct{}
 
-    app, _ := routeflow.New("lib.yaml")
+// GetUser handles GET /users/:id
+func (h *UserHandler) GetUser(c *context.Context) (interface{}, int) {
+	id := c.Param("id")
+	var user User
+	
+	if err := c.DB.First(&user, id).Error; err != nil {
+		return map[string]string{"error": "User not found"}, http.StatusNotFound
+	}
+	
+	return user, http.StatusOK
+}
 
-    log.Println("Starting API Server with declarative routing...")
-    
-    app.InitDB()
-    app.DB.AutoMigrate(&sample.User{})  // Auto-migrate if enabled
-    app.Serve(handlerMap)
+// CreateUser handles POST /users
+func (h *UserHandler) CreateUser(c *context.Context) (interface{}, int) {
+	var input struct {
+		Name     string `json:"name" binding:"required"`
+		Email    string `json:"email" binding:"required,email"`
+		Password string `json:"password" binding:"required,min=8"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		return map[string]string{"error": err.Error()}, http.StatusBadRequest
+	}
+
+	user := User{
+		Name:     input.Name,
+		Email:    input.Email,
+		Password: hashPassword(input.Password),
+	}
+
+	if err := c.DB.Create(&user).Error; err != nil {
+		return map[string]string{"error": "Failed to create user"}, http.StatusInternalServerError
+	}
+
+	return user, http.StatusCreated
 }
 ```
 
----
+## 🔄 Development
 
-### 3️⃣ Define Your Handlers
+### Running Tests
 
-```go
-package sample
-
-import (
-    "net/http"
-    "github.com/go-deck/routeflow/routeflow/ctx"
-)
-
-type User struct {
-    ID          int    `json:"id"`
-    Username    string `json:"username"`
-    PhoneNumber string `json:"phone_number"`
-    Email       string `json:"email"`
-}
-
-// Get all users
-func ListUsers(c *ctx.Context) (interface{}, int) {
-    var users []User
-    if err := c.DB.Find(&users).Error; err != nil {
-        return map[string]string{"error": "Database error"}, http.StatusInternalServerError
-    }
-    return users, http.StatusOK
-}
-
-// Get user by ID
-func GetUserDataById(c *ctx.Context) (interface{}, int) {
-    id, exists := c.PathParams["id"]
-    if !exists {
-        return map[string]string{"error": "Invalid user ID"}, http.StatusBadRequest
-    }
-
-    var user User
-    if err := c.DB.First(&user, id).Error; err != nil {
-        return map[string]string{"error": "User not found"}, http.StatusNotFound
-    }
-    return user, http.StatusOK
-}
-
-// Create a new user
-func CreateUser(c *ctx.Context) (interface{}, int) {
-    user := User{
-        Username:    c.BodyData["username"].(string),
-        PhoneNumber: c.BodyData["phonenumber"].(string),
-        Email:       c.BodyData["email"].(string),
-    }
-    
-    if err := c.DB.Create(&user).Error; err != nil {
-        return map[string]string{"error": "Failed to create user"}, http.StatusInternalServerError
-    }
-    return map[string]string{"message": "User created successfully"}, http.StatusCreated
-}
+```bash
+go test -v ./...
 ```
 
----
+### Building
 
-### 4️⃣ Run Your Application
-
-```sh
-go run main.go
+```bash
+go build -o app cmd/server/main.go
 ```
-
-Your API server is now running! 🎉
-
----
-
-## 🔥 Future Enhancements
-- ✅ Support for **Fiber, Echo, Chi**
-- 🔐 Authentication & Role-Based Access Control
-- 📈 Rate Limiting & API Analytics
-- 🔄 Hot Reload for Config Updates
 
 ## 🤝 Contributing
-Contributions are welcome! Feel free to open an issue or PR on [GitHub](https://github.com/go-deck/routeflow).
 
-## 📜 License
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🔗 Useful Links
+
+- [Documentation](https://github.com/go-deck/routeflow/wiki)
+- [Examples](https://github.com/go-deck/routeflow/tree/main/examples)
+- [Report Bug](https://github.com/go-deck/routeflow/issues)
+- [Request Feature](https://github.com/go-deck/routeflow/issues/new?template=feature_request.md)
+
+## 🌟 Show Your Support
+
+Give a ⭐️ if this project helped you!
+
+---
+
+<div align="center">
+  Made with ❤️ by RouteFlow Team
+</div>
 
 🚀 **Happy coding!** 🎯
-

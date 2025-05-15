@@ -1,11 +1,11 @@
 package frameworks
 
 import (
-	"github.com/go-deck/routeflow/ctx"
-	"github.com/go-deck/routeflow/loader"
+	"github.com/go-deck/routeflow/internal/ctx"
+	"github.com/go-deck/routeflow/internal/loader"
 	"gorm.io/gorm"
 )
 
 type Server interface {
-	Start(cfg *loader.Config, handlerMap map[string]func(*ctx.Context) (interface{}, int), db *gorm.DB)
+	Start(cfg *loader.Config, handlerMap map[string]ctx.HandlerFunc, db *gorm.DB, middlewareMap map[string]ctx.HandlerFunc)
 }

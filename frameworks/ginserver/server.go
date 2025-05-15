@@ -2,26 +2,29 @@ package ginserver
 
 import (
 	"fmt"
-	"log"
 
-	"github.com/gin-gonic/gin"
-	"github.com/go-deck/routeflow/ctx"
-	"github.com/go-deck/routeflow/loader"
+	log "github.com/sirupsen/logrus"
+
+	framework "github.com/gin-gonic/gin"
+	"github.com/go-deck/routeflow/internal/ctx"
+	"github.com/go-deck/routeflow/internal/loader"
 	"gorm.io/gorm"
 )
 
 type GinServer struct{}
 
-func (g *GinServer) Start(cfg *loader.Config, handlerMap map[string]func(*ctx.Context) (interface{}, int), db *gorm.DB) {
-	r := gin.New()
+func (g *GinServer) Start(cfg *loader.Config, handlerMap map[string]ctx.HandlerFunc, db *gorm.DB, middlewareMap map[string]ctx.HandlerFunc) {
+	r := framework.New()
 
-	gin.SetMode(gin.ReleaseMode)
+	r.Use(ctx.Middleware(db))
+
+	framework.SetMode(framework.ReleaseMode)
 
 	// Load middleware
-	LoadMiddlewares(r, cfg)
+	LoadMiddlewares(r, cfg, middlewareMap, db)
 
 	// Register routes
-	InitGinRouter(r, cfg, handlerMap, db)
+	InitGinRouter(r, cfg, handlerMap, db, middlewareMap)
 
 	// Start server
 	port := fmt.Sprintf(":%d", cfg.Server.Port)
