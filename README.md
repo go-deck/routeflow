@@ -4,6 +4,12 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-deck/routeflow)](https://goreportcard.com/report/github.com/go-deck/routeflow)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+[![View Documentation](https://img.shields.io/badge/View-Documentation-2ea44f?style=for-the-badge&logo=go&logoColor=white)](https://pkg.go.dev/github.com/go-deck/routeflow)
+
+```go
+import "github.com/go-deck/routeflow"  // [Documentation](https://pkg.go.dev/github.com/go-deck/routeflow)
+```
+
 ## 🔍 Overview
 RouteFlow is a high-performance, declarative API routing library for Go that simplifies RESTful API development. Define your entire API structure, including routes, middlewares, and database configurations, in a clean YAML file for better maintainability and scalability.
 
