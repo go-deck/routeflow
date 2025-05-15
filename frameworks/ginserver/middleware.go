@@ -9,11 +9,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// Simplified adapter
-func MiddlewareAdapter(db *gorm.DB, fn func(*ctx.Context) (interface{}, int)) framework.HandlerFunc {
+// Change to accept ctx.HandlerFunc explicitly
+func MiddlewareAdapter(db *gorm.DB, fn ctx.HandlerFunc) framework.HandlerFunc {
 	return func(c *framework.Context) {
-		cc := ctx.NewContext(c, db)
-		if response, status := fn(cc); status > 0 {
+		cc := ctx.Get(c) // Use shared context
+		response, status := fn(cc)
+		if status > 0 {
 			c.AbortWithStatusJSON(status, response)
 		} else {
 			c.Next()
@@ -21,7 +22,7 @@ func MiddlewareAdapter(db *gorm.DB, fn func(*ctx.Context) (interface{}, int)) fr
 	}
 }
 
-func LoadMiddlewares(r *framework.Engine, cfg *loader.Config, middlewareMap map[string]func(*ctx.Context) (interface{}, int), db *gorm.DB) {
+func LoadMiddlewares(r *framework.Engine, cfg *loader.Config, middlewareMap map[string]ctx.HandlerFunc, db *gorm.DB) {
 	// Built-in middlewares
 	for _, mw := range cfg.Middlewares.BuiltIn {
 		switch mw {

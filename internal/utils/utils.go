@@ -34,8 +34,8 @@ func DiscoverHandlers(handlerStructs ...interface{}) map[string]ctx.HandlerFunc 
 }
 
 // Map YAML handlers to discovered handlers
-func MapHandlersFromYAML(cfg *loader.Config, discovered map[string]ctx.HandlerFunc) map[string]func(*ctx.Context) (interface{}, int) {
-	mappedHandlers := make(map[string]func(*ctx.Context) (interface{}, int))
+func MapHandlersFromYAML(cfg *loader.Config, discovered map[string]ctx.HandlerFunc) map[string]ctx.HandlerFunc {
+	mappedHandlers := make(map[string]ctx.HandlerFunc)
 
 	for _, group := range cfg.Routes.Groups {
 		for _, route := range group.Routes {
@@ -54,8 +54,8 @@ func MapHandlersFromYAML(cfg *loader.Config, discovered map[string]ctx.HandlerFu
 	return mappedHandlers
 }
 
-func MapMiddlewareHandlersFromYAML(cfg *loader.Config, discovered map[string]ctx.HandlerFunc) map[string]func(*ctx.Context) (interface{}, int) {
-	mappedHandlers := make(map[string]func(*ctx.Context) (interface{}, int))
+func MapMiddlewareHandlersFromYAML(cfg *loader.Config, discovered map[string]ctx.HandlerFunc) map[string]ctx.HandlerFunc {
+	mappedHandlers := make(map[string]ctx.HandlerFunc)
 
 	// Collect all middleware references from all levels
 	var allMiddlewareNames []string

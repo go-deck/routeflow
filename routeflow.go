@@ -16,8 +16,8 @@ import (
 type App struct {
 	Config        *loader.Config
 	DB            *gorm.DB
-	HandlerMap    map[string]func(*ctx.Context) (interface{}, int)
-	MiddlewareMap map[string]func(*ctx.Context) (interface{}, int)
+	HandlerMap    map[string]ctx.HandlerFunc
+	MiddlewareMap map[string]ctx.HandlerFunc
 }
 
 type Context = ctx.Context

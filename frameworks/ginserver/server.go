@@ -13,7 +13,8 @@ import (
 
 type GinServer struct{}
 
-func (g *GinServer) Start(cfg *loader.Config, handlerMap map[string]func(*ctx.Context) (interface{}, int), db *gorm.DB, middlewareMap map[string]func(*ctx.Context) (interface{}, int)) {
+func (g *GinServer) Start(cfg *loader.Config, handlerMap map[string]ctx.HandlerFunc, db *gorm.DB, middlewareMap map[string]ctx.HandlerFunc) {
+
 	r := framework.New()
 
 	r.Use(ctx.Middleware(db))

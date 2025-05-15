@@ -7,5 +7,5 @@ import (
 )
 
 type Server interface {
-	Start(cfg *loader.Config, handlerMap map[string]func(*ctx.Context) (interface{}, int), db *gorm.DB, middlewareMap map[string]func(*ctx.Context) (interface{}, int))
+	Start(cfg *loader.Config, handlerMap map[string]ctx.HandlerFunc, db *gorm.DB, middlewareMap map[string]ctx.HandlerFunc)
 }
